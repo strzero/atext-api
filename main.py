@@ -36,41 +36,6 @@ class Sentence(BaseModel):
 def calculate_similarity(a: str, b: str) -> float:
     return SequenceMatcher(None, a, b).ratio()
 
-@app.get("/")
-async def read_root():
-    return {
-        "usage": {
-            "获取一句话点赞数": {
-                "method": "GET",
-                "url": "/page/{title}",
-                "params": {
-                    "context": "可选，一句话内容。如果提供，将用于判断是否重置点赞数。"
-                },
-                "response": {
-                    "title": "一句话标题",
-                    "context": "一句话内容",
-                    "likes": "点赞数",
-                    "message": "操作信息"
-                }
-            },
-            "点赞一句话": {
-                "method": "POST",
-                "url": "/page/{title}/like",
-                "response": {
-                    "message": "操作信息",
-                    "likes": "当前点赞数"
-                }
-            },
-            "删除一句话": {
-                "method": "DELETE",
-                "url": "/page/{title}",
-                "response": {
-                    "message": "操作信息"
-                }
-            }
-        }
-    }
-
 @app.get("/page/{title}")
 async def get_sentence(title: str, context: str = Query(None)):
     SentenceQuery = TinyQuery()
@@ -100,6 +65,21 @@ async def like_sentence(title: str):
         return {"message": "点赞成功。", "likes": new_likes}
     else:
         raise HTTPException(status_code=404, detail="一句话未找到。")
+
+@app.post("/page/{title}/unlike")
+async def unlike_sentence(title: str):
+    SentenceQuery = TinyQuery()
+    sentence = db.get(SentenceQuery.title == title)
+    if sentence:
+        if sentence['likes'] > 0:
+            new_likes = sentence['likes'] - 1
+            db.update({"likes": new_likes}, SentenceQuery.title == title)
+            return {"message": "取消点赞成功。", "likes": new_likes}
+        else:
+            return {"message": "点赞数已为0，无法继续取消点赞。", "likes": 0}
+    else:
+        raise HTTPException(status_code=404, detail="一句话未找到。")
+
 
 @app.delete("/page/{title}")
 async def delete_sentence(title: str):
