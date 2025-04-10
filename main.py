@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 from tinydb import TinyDB, Query as TinyQuery
@@ -25,7 +27,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-db = TinyDB('sentences.json')
+db = TinyDB(os.path.join('data', 'sentences.json'))
 
 class Sentence(BaseModel):
     title: str
