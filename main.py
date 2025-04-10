@@ -37,7 +37,6 @@ def calculate_similarity(a: str, b: str) -> float:
 @app.get("/")
 async def read_root():
     return {
-        "message": "欢迎使用一句话点赞 API。",
         "usage": {
             "获取一句话点赞数": {
                 "method": "GET",
